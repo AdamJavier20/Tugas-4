@@ -1,6 +1,6 @@
-package com.example.tugas4
+package com.example.tugas5
 
-
+import android.database.Cursor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,26 +9,29 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.tugas4.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.example.tugas4.model.UserData
-import com.example.tugas4.view.UserAdapter
+import com.example.tugas5.view.UserAdapter
 
 
         class MainActivity : AppCompatActivity() {
             private lateinit var btn: FloatingActionButton
             private lateinit var recv: RecyclerView
-            private lateinit var userList: ArrayList<UserData>
             private lateinit var userAdapter: UserAdapter
+            private lateinit var dbHelper: DBHelper
+            private lateinit var cursor: Cursor
             override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
 
                 setContentView(R.layout.activity_main)
-                userList = ArrayList()
-                btn = findViewById(R.id.btn)
+                dbHelper = DBHelper(this)
+                cursor = dbHelper.gettext()
+
                 recv = findViewById(R.id.recy)
-                userAdapter = UserAdapter(this, userList)
+                userAdapter = UserAdapter(this, cursor)
                 recv.layoutManager = LinearLayoutManager(this)
                 recv.adapter = userAdapter
+                btn = findViewById(R.id.btn)
                 btn.setOnClickListener { addInfo() }
             }
 
@@ -44,11 +47,16 @@ import com.example.tugas4.view.UserAdapter
                 addDialog.setPositiveButton("Ok") { dialog, _ ->
                     val names = userName.text.toString()
                     val number = userNo.text.toString()
-                    userList.add(UserData("Nama: $names", "No. : $number"))
-                    userAdapter.notifyDataSetChanged()
-                    Toast.makeText(this, "Informasi berhasil ditambahkan", Toast.LENGTH_SHORT)
-                        .show()
+                    val success = dbHelper.saveuserdata(names, number)
+                    if (success){
+                        cursor = dbHelper.gettext()
+                        userAdapter.swapCursor(cursor)
+                        Toast.makeText(this, "Sukses", Toast.LENGTH_SHORT).show()
+                    } else{
+                        Toast.makeText(this, "Gagal", Toast.LENGTH_SHORT).show()
+                    }
                     dialog.dismiss()
+
                 }
                 addDialog.setNegativeButton("Cancel") { dialog, _ ->
                     dialog.dismiss()

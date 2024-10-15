@@ -1,4 +1,4 @@
-package com.example.tugas4.model
+package com.example.tugas5.model
 
 data class UserData (
     val userName:String,
